@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JPADemo - Frontend</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding-top: 20px;
+        }
+        .card {
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        }
+        .table-hover tbody tr:hover {
+            background-color: rgba(0, 123, 255, 0.1);
+        }
+        .api-info {
+            font-family: monospace;
+            font-size: 0.85rem;
+        }
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
+    <div class="container">
+        <a class="navbar-brand" href="#">
+            <i class="bi bi-database"></i> JPADemo - JavaScript Vanilla
+        </a>
+        <span class="navbar-text text-light">
+                <i class="bi bi-plug"></i> API: /demoJPA
+            </span>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="row">
+        <!-- Columna izquierda: Formulario -->
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0" id="formTitle">
+                        <i class="bi bi-person-plus"></i> Nueva Persona
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form id="personForm">
+                        <!-- Campo oculto para ID (usado en edición) -->
+                        <input type="hidden" id="personId">
+
+                        <!-- Campo Nombre -->
+                        <div class="mb-3">
+                            <label for="name" class="form-label">
+                                <i class="bi bi-person"></i> Nombre
+                            </label>
+                            <input type="text"
+                                   class="form-control"
+                                   id="name"
+                                   placeholder="Ingrese el nombre"
+                                   required>
+                        </div>
+
+                        <!-- Campo Apellido -->
+                        <div class="mb-3">
+                            <label for="lastName" class="form-label">
+                                <i class="bi bi-person-badge"></i> Apellido
+                            </label>
+                            <input type="text"
+                                   class="form-control"
+                                   id="lastName"
+                                   placeholder="Ingrese el apellido"
+                                   required>
+                        </div>
+
+                        <!-- Campo Edad -->
+                        <div class="mb-3">
+                            <label for="age" class="form-label">
+                                <i class="bi bi-calendar"></i> Edad
+                            </label>
+                            <input type="number"
+                                   class="form-control"
+                                   id="age"
+                                   placeholder="Ingrese la edad"
+                                   min="0"
+                                   max="150"
+                                   required>
+                        </div>
+
+                        <!-- Botones -->
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-success" id="btnSubmit">
+                                <i class="bi bi-send"></i> <span id="btnText">Crear Persona</span>
+                            </button>
+                            <button type="button" class="btn btn-secondary" id="btnCancel" style="display: none;">
+                                <i class="bi bi-x-circle"></i> Cancelar
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Info del endpoint -->
+                    <div class="mt-3 api-info">
+                        <small class="text-muted">
+                            <strong>Endpoint:</strong>
+                            <code id="endpointInfo">POST /demoJPA/persons</code>
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Columna derecha: Lista de personas -->
+        <div class="col-md-8 mb-4">
+            <div class="card">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-people-fill"></i> Lista de Personas
+                    </h5>
+                    <button class="btn btn-light btn-sm" onclick="loadPersons()">
+                        <i class="bi bi-arrow-clockwise"></i> Actualizar
+                    </button>
+                </div>
+                <div class="card-body">
+                    <!-- Mensaje de carga -->
+                    <div id="loadingMessage" class="text-center py-3" style="display: none;">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Cargando...</span>
+                        </div>
+                        <p class="mt-2">Cargando datos...</p>
+                    </div>
+
+                    <!-- Mensaje cuando no hay datos -->
+                    <div id="emptyMessage" class="alert alert-info" style="display: none;">
+                        <i class="bi bi-info-circle"></i> No hay personas registradas.
+                    </div>
+
+                    <!-- Tabla de personas -->
+                    <div id="tableContainer" class="table-responsive">
+                        <table class="table table-hover table-striped">
+                            <thead class="table-dark">
+                            <tr>
+                                <th>#ID</th>
+                                <th>Nombre</th>
+                                <th>Apellido</th>
+                                <th>Edad</th>
+                                <th class="text-center">Acciones</th>
+                            </tr>
+                            </thead>
+                            <tbody id="personsTableBody">
+                            <!-- Los datos se cargarán aquí dinámicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Contador -->
+                    <div class="text-muted">
+                        <small>Total: <span id="totalCount">0</span> persona(s)</small>
+                    </div>
+
+                    <!-- Info del endpoint -->
+                    <div class="mt-2 api-info">
+                        <small class="text-muted">
+                            <strong>Endpoint:</strong>
+                            <code>GET /demoJPA/persons</code>
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Modal de confirmación para eliminar -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-exclamation-triangle"></i> Confirmar Eliminación
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>¿Está seguro de eliminar a <strong id="deletePersonName"></strong>?</p>
+                <p class="text-muted mb-0">
+                    <small>Esta acción no se puede deshacer.</small>
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger" id="btnConfirmDelete">
+                    <i class="bi bi-trash"></i> Eliminar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- JavaScript para consumir la API -->
+<script>
+    // ===========================================
+    // CONFIGURACIÓN
+    // ===========================================
+    const API_BASE_URL = '/demoJPA';
+
+    // Variable para almacenar el ID de la persona a eliminar
+    let personToDeleteId = null;
+
+    // ===========================================
+    // FUNCIONES PARA CONSUMIR LA API (FETCH)
+    // ===========================================
+
+    /**
+     * GET - Obtener todas las personas
+     * Endpoint: GET /demoJPA/persons
+     */
+    async function loadPersons() {
+        const url = `${API_BASE_URL}/persons`;
+        showLoading(true);
+
+        try {
+            const response = await fetch(url);
+            const data = await response.json();
+            renderPersonsTable(data);
+        } catch (error) {
+            console.error('Error:', error);
+            showError('Error al cargar los datos');
+        } finally {
+            showLoading(false);
+        }
+    }
+
+    /**
+     * GET - Obtener una persona por ID
+     * Endpoint: GET /demoJPA/persons/{id}
+     */
+    async function getPerson(id) {
+        const url = `${API_BASE_URL}/persons/${id}`;
+
+        try {
+            const response = await fetch(url);
+            const data = await response.json();
+            return data;
+        } catch (error) {
+            console.error('Error:', error);
+            return null;
+        }
+    }
+
+    /**
+     * POST - Crear una nueva persona
+     * Endpoint: POST /demoJPA/persons
+     */
+    async function createPerson(person) {
+        const url = `${API_BASE_URL}/persons`;
+
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(person)
+            });
+            return response.ok;
+        } catch (error) {
+            console.error('Error:', error);
+            return false;
+        }
+    }
+
+    /**
+     * PATCH - Actualizar una persona
+     * Endpoint: PATCH /demoJPA/{id}
+     */
+    async function updatePerson(id, person) {
+        const url = `${API_BASE_URL}/${id}`;
+
+        try {
+            const response = await fetch(url, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(person)
+            });
+            return response.ok;
+        } catch (error) {
+            console.error('Error:', error);
+            return false;
+        }
+    }
+
+    /**
+     * DELETE - Eliminar una persona
+     * Endpoint: DELETE /demoJPA/persons/{id}
+     */
+    async function deletePerson(id) {
+        const url = `${API_BASE_URL}/persons/${id}`;
+
+        try {
+            const response = await fetch(url, {
+                method: 'DELETE'
+            });
+            return response.ok;
+        } catch (error) {
+            console.error('Error:', error);
+            return false;
+        }
+    }
+
+    // ===========================================
+    // FUNCIONES DE LA INTERFAZ (DOM)
+    // ===========================================
+
+    function showLoading(show) {
+        document.getElementById('loadingMessage').style.display = show ? 'block' : 'none';
+        document.getElementById('tableContainer').style.display = show ? 'none' : 'block';
+    }
+
+    function showError(message) {
+        alert(message);
+    }
+
+    function renderPersonsTable(persons) {
+        const tbody = document.getElementById('personsTableBody');
+        const emptyMessage = document.getElementById('emptyMessage');
+        const tableContainer = document.getElementById('tableContainer');
+
+        if (persons.length === 0) {
+            emptyMessage.style.display = 'block';
+            tableContainer.style.display = 'none';
+        } else {
+            emptyMessage.style.display = 'none';
+            tableContainer.style.display = 'block';
+
+            tbody.innerHTML = persons.map(person => `
+                <tr>
+                    <td>${person.id}</td>
+                    <td>${person.name}</td>
+                    <td>${person.lastName}</td>
+                    <td>${person.age} años</td>
+                    <td class="text-center">
+                        <div class="btn-group" role="group">
+                            <button class="btn btn-warning btn-sm"
+                                    onclick="editPerson(${person.id})"
+                                    title="Editar">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-danger btn-sm"
+                                    onclick="confirmDelete(${person.id}, '${person.name} ${person.lastName}')"
+                                    title="Eliminar">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        document.getElementById('totalCount').textContent = persons.length;
+    }
+
+    function resetForm() {
+        document.getElementById('personForm').reset();
+        document.getElementById('personId').value = '';
+        document.getElementById('formTitle').innerHTML = '<i class="bi bi-person-plus"></i> Nueva Persona';
+        document.getElementById('btnText').textContent = 'Crear Persona';
+        document.getElementById('btnSubmit').className = 'btn btn-success';
+        document.getElementById('btnCancel').style.display = 'none';
+        document.getElementById('endpointInfo').textContent = 'POST /demoJPA/persons';
+
+        // Cambiar color del header
+        document.querySelector('.col-md-4 .card-header').className = 'card-header bg-success text-white';
+    }
+
+    async function editPerson(id) {
+        const person = await getPerson(id);
+
+        if (person) {
+            document.getElementById('personId').value = person.id;
+            document.getElementById('name').value = person.name;
+            document.getElementById('lastName').value = person.lastName;
+            document.getElementById('age').value = person.age;
+
+            document.getElementById('formTitle').innerHTML = '<i class="bi bi-pencil"></i> Editar Persona';
+            document.getElementById('btnText').textContent = 'Actualizar Persona';
+            document.getElementById('btnSubmit').className = 'btn btn-warning';
+            document.getElementById('btnCancel').style.display = 'block';
+            document.getElementById('endpointInfo').textContent = `PATCH /demoJPA/${id}`;
+
+            // Cambiar color del header
+            document.querySelector('.col-md-4 .card-header').className = 'card-header bg-warning text-dark';
+
+            // Scroll al formulario
+            document.getElementById('personForm').scrollIntoView({ behavior: 'smooth' });
+        }
+    }
+
+    function confirmDelete(id, name) {
+        personToDeleteId = id;
+        document.getElementById('deletePersonName').textContent = name;
+
+        const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+        modal.show();
+    }
+
+    // ===========================================
+    // EVENT LISTENERS
+    // ===========================================
+
+    // Formulario: Crear o Actualizar
+    document.getElementById('personForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const id = document.getElementById('personId').value;
+        const person = {
+            name: document.getElementById('name').value,
+            lastName: document.getElementById('lastName').value,
+            age: parseInt(document.getElementById('age').value)
+        };
+
+        let success;
+
+        if (id) {
+            // Actualizar persona existente (PATCH)
+            success = await updatePerson(id, person);
+        } else {
+            // Crear nueva persona (POST)
+            success = await createPerson(person);
+        }
+
+        if (success) {
+            resetForm();
+            loadPersons();
+        } else {
+            showError('Error al guardar los datos');
+        }
+    });
+
+    // Botón Cancelar
+    document.getElementById('btnCancel').addEventListener('click', function() {
+        resetForm();
+    });
+
+    // Botón Confirmar Eliminar
+    document.getElementById('btnConfirmDelete').addEventListener('click', async function() {
+        if (personToDeleteId) {
+            const success = await deletePerson(personToDeleteId);
+
+            if (success) {
+                loadPersons();
+
+                // Si estábamos editando esta persona, resetear el formulario
+                if (document.getElementById('personId').value == personToDeleteId) {
+                    resetForm();
+                }
+            } else {
+                showError('Error al eliminar');
+            }
+
+            personToDeleteId = null;
+            bootstrap.Modal.getInstance(document.getElementById('deleteModal')).hide();
+        }
+    });
+
+    // ===========================================
+    // INICIALIZACIÓN
+    // ===========================================
+    document.addEventListener('DOMContentLoaded', function() {
+        loadPersons();
+    });
+</script>
+</body>
+</html>
