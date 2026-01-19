@@ -1,0 +1,161 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Módulo predeterminado",
+    "description": "",
+    "version": "1.0.0"
+  },
+  "tags": [],
+  "paths": {
+    "/demoJPA/persons": {
+      "post": {
+        "summary": "POST JPA",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {}
+              },
+              "example": {
+                "name": "Roberto",
+                "lastName": "Ledesma",
+                "age": 23
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                },
+                "example": "La persona fue creada correctamente"
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      },
+      "get": {
+        "summary": "GET JPA",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                },
+                "example": [
+                  {
+                    "id": 1,
+                    "name": "Anthony",
+                    "lastName": "Ledesma",
+                    "age": 20
+                  },
+                  {
+                    "id": 2,
+                    "name": "Anthony",
+                    "lastName": "Ledesma",
+                    "age": 20
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/demoJPA/persons/2": {
+      "delete": {
+        "summary": "DELETE JPA",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                },
+                "example": "Persona eliminada correctamente"
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/demoJPA/3": {
+      "patch": {
+        "summary": "PATCH",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {}
+              },
+              "example": {
+                "name": "Veronica Actualizado"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                },
+                "example": {
+                  "id": 3,
+                  "name": "Veronica Actualizado",
+                  "lastName": "Ledesma",
+                  "age": 23
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    }
+  },
+  "components": {
+    "schemas": {},
+    "responses": {},
+    "securitySchemes": {}
+  },
+  "servers": [],
+  "security": []
+}
